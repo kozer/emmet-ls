@@ -6,8 +6,9 @@ import {
   parseStylesheet,
   resolveConfig,
   stringifyMarkup,
-  stringifyStylesheet
+  stringifyStylesheet,
 } from 'emmet';
+import { FieldOutput } from 'emmet/dist/src/config';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
   CompletionItem,
@@ -20,7 +21,7 @@ import {
   ProposedFeatures,
   TextDocumentPositionParams,
   TextDocuments,
-  TextDocumentSyncKind
+  TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 
 let connection = createConnection(ProposedFeatures.all);
@@ -31,6 +32,45 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+const outField: FieldOutput = (index, placeholder) =>
+  ` \$\{${index}${placeholder ? ":" + placeholder : ""}\} `;
+
+const getConfig = (languageId: string) => {
+  let config = null;
+  switch (languageId) {
+    case 'css': {
+      config = resolveConfig({
+        type: "stylesheet",
+        options: {
+          'output.field': outField,
+        },
+      });
+      break;
+    }
+    case 'typescriptreact':
+    case 'javascriptreact':
+    case 'typescript.tsx':
+    case 'typescript.jsx': {
+      config = resolveConfig({
+        type: "stylesheet",
+        options: {
+          "output.field": outField,
+          "jsx.enabled": true,
+        },
+      });
+      break;
+    }
+    default: {
+      config = resolveConfig({
+        options: {
+          'output.field': outField,
+        },
+      });
+    }
+  }
+  return config;
+};
 
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
@@ -144,28 +184,9 @@ connection.onCompletion(
       let left = extractPosition.start;
       let right = extractPosition.start;
       let abbreviation = extractPosition.abbreviation;
-      let textResult = '';
-      if (languageId === 'css') {
-
-        const cssConfig = resolveConfig({
-          type: 'stylesheet',
-          options: {
-            'output.field': (index, placeholder) =>
-              ` \$\{${index}${placeholder ? ':' + placeholder : ''}\} `,
-          },
-        });
-        const markup = parseStylesheet(abbreviation, cssConfig);
-        textResult = stringifyStylesheet(markup, cssConfig);
-      } else {
-        const htmlconfig = resolveConfig({
-          options: {
-            'output.field': (index, placeholder) =>
-              ` \$\{${index}${placeholder ? ':' + placeholder : ''}\} `,
-          },
-        });
-        const markup = parseMarkup(abbreviation, htmlconfig);
-        textResult = stringifyMarkup(markup, htmlconfig);
-      }
+      const config = getConfig(languageId);
+      const markup = parseMarkup(abbreviation, config);
+      const textResult = stringifyMarkup(markup, config);
       const range = {
         start: {
           line: linenr,
@@ -184,7 +205,7 @@ connection.onCompletion(
           documentation: textResult,
           textEdit: {
             range,
-            newText  : textResult,
+            newText: textResult,
             // newText: textResult.replace(/\$\{\d*\}/g,''),
           },
           kind: CompletionItemKind.Snippet,
