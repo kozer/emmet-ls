@@ -1,5 +1,5 @@
 {
-	"name": "emmet-language-server",
+	"name": "emmet-ls",
 	"description": "emmet support by LSP",
 	"version": "0.1.1",
 	"author": "kozer",
@@ -19,6 +19,7 @@
 		"vscode-languageserver-textdocument": "^1.0.1"
 	},
 	"scripts": {
+    "prepare": "npm run build",
 		"dev": "npm run-script build && npm link",
 		"build": "tsc"
 	},
