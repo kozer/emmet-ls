@@ -145,16 +145,8 @@ connection.onCompletion(
       let right = extractPosition.start;
       let abbreviation = extractPosition.abbreviation;
       let textResult = '';
-      if (languageId === 'html') {
-        const htmlconfig = resolveConfig({
-          options: {
-            'output.field': (index, placeholder) =>
-              ` \$\{${index}${placeholder ? ':' + placeholder : ''}\} `,
-          },
-        });
-        const markup = parseMarkup(abbreviation, htmlconfig);
-        textResult = stringifyMarkup(markup, htmlconfig);
-      } else {
+      if (languageId === 'css') {
+
         const cssConfig = resolveConfig({
           type: 'stylesheet',
           options: {
@@ -164,6 +156,15 @@ connection.onCompletion(
         });
         const markup = parseStylesheet(abbreviation, cssConfig);
         textResult = stringifyStylesheet(markup, cssConfig);
+      } else {
+        const htmlconfig = resolveConfig({
+          options: {
+            'output.field': (index, placeholder) =>
+              ` \$\{${index}${placeholder ? ':' + placeholder : ''}\} `,
+          },
+        });
+        const markup = parseMarkup(abbreviation, htmlconfig);
+        textResult = stringifyMarkup(markup, htmlconfig);
       }
       const range = {
         start: {
