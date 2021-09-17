@@ -72,6 +72,13 @@ const getConfig = (languageId: string) => {
   return config;
 };
 
+connection.onCompletionResolve(
+  (item: CompletionItem): CompletionItem => {
+    item.insertTextFormat = InsertTextFormat.Snippet;
+    return item;
+  }
+);
+
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
 
@@ -200,6 +207,7 @@ connection.onCompletion(
 
       return [
         {
+          insertTextFormat: InsertTextFormat.Snippet,
           label: abbreviation,
           detail: abbreviation,
           documentation: textResult,
