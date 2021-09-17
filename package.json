@@ -1,5 +1,5 @@
 {
-	"name": "emmet-language-server",
+	"name": "emmet-ls",
 	"description": "emmet support by LSP",
 	"version": "0.1.1",
 	"author": "kozer",
